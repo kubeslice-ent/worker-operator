@@ -1,0 +1,49 @@
+/*
+ *  Copyright (c) 2022 Avesha, Inc. All rights reserved.
+ *
+ *  SPDX-License-Identifier: Apache-2.0
+ *
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
+ *
+ *  http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
+ */
+
+package utils
+
+import (
+	"context"
+	"os"
+
+	"github.com/kubeslice/kubeslice-monitoring/pkg/events"
+	"github.com/kubeslice/worker-operator/pkg/logger"
+	"k8s.io/apimachinery/pkg/runtime"
+)
+
+func GetEnvOrDefault(key, def string) string {
+	val, ok := os.LookupEnv(key)
+	if !ok {
+		return def
+	}
+	return val
+}
+
+func RecordEvent(ctx context.Context, recorder *events.EventRecorder, object, relatedObject runtime.Object, name events.EventName, controller string) {
+	log := logger.FromContext(ctx)
+	err := (*recorder).RecordEvent(ctx, &events.Event{
+		Object:            object,
+		RelatedObject:     relatedObject,
+		ReportingInstance: controller,
+		Name:              name,
+	})
+	if err != nil {
+		log.Error(err, "unable to raise event")
+	}
+}

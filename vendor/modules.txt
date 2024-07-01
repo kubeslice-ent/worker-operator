@@ -143,6 +143,41 @@ github.com/kubeslice/router-sidecar/pkg/sidecar/sidecarpb
 ## explicit; go 1.21
 github.com/kubeslice/slicegw-edge/pkg/edgeservice
 github.com/kubeslice/slicegw-edge/pkg/logger
+# github.com/kubeslice/worker-operator v1.4.5
+## explicit; go 1.22.1
+github.com/kubeslice/worker-operator/api/v1beta1
+github.com/kubeslice/worker-operator/controllers
+github.com/kubeslice/worker-operator/controllers/serviceexport
+github.com/kubeslice/worker-operator/controllers/serviceimport
+github.com/kubeslice/worker-operator/controllers/slice
+github.com/kubeslice/worker-operator/controllers/slicegateway
+github.com/kubeslice/worker-operator/events
+github.com/kubeslice/worker-operator/pkg/cluster
+github.com/kubeslice/worker-operator/pkg/featureflag
+github.com/kubeslice/worker-operator/pkg/gatewayedge
+github.com/kubeslice/worker-operator/pkg/gwsidecar
+github.com/kubeslice/worker-operator/pkg/hub/controllers
+github.com/kubeslice/worker-operator/pkg/hub/controllers/cluster
+github.com/kubeslice/worker-operator/pkg/hub/controllers/vpnkeyrotation
+github.com/kubeslice/worker-operator/pkg/hub/controllers/workerslicegwrecycler
+github.com/kubeslice/worker-operator/pkg/hub/hubclient
+github.com/kubeslice/worker-operator/pkg/hub/manager
+github.com/kubeslice/worker-operator/pkg/logger
+github.com/kubeslice/worker-operator/pkg/manifest
+github.com/kubeslice/worker-operator/pkg/mocks
+github.com/kubeslice/worker-operator/pkg/monitoring
+github.com/kubeslice/worker-operator/pkg/namespace/controllers
+github.com/kubeslice/worker-operator/pkg/netop
+github.com/kubeslice/worker-operator/pkg/networkpolicy
+github.com/kubeslice/worker-operator/pkg/router
+github.com/kubeslice/worker-operator/pkg/slicegwrecycler
+github.com/kubeslice/worker-operator/pkg/utils
+github.com/kubeslice/worker-operator/pkg/webhook/pod
+github.com/kubeslice/worker-operator/tests/emulator/hubclient
+github.com/kubeslice/worker-operator/tests/emulator/workerclient/netop
+github.com/kubeslice/worker-operator/tests/emulator/workerclient/router
+github.com/kubeslice/worker-operator/tests/emulator/workerclient/sidecargw
+github.com/kubeslice/worker-operator/tests/utils
 # github.com/looplab/fsm v0.3.0
 ## explicit; go 1.16
 github.com/looplab/fsm

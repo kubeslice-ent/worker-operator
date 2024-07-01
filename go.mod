@@ -1,4 +1,4 @@
-module github.com/kubeslice/worker-operator
+module github.com/kubeslice-ent/worker-operator
 
 go 1.22.1
 
@@ -39,7 +39,10 @@ require (
 	sigs.k8s.io/controller-runtime v0.16.3
 )
 
-require sigs.k8s.io/gateway-api v1.0.0
+require (
+	github.com/kubeslice/worker-operator v1.4.5
+	sigs.k8s.io/gateway-api v1.0.0
+)
 
 require (
 	github.com/beorn7/perks v1.0.1 // indirect

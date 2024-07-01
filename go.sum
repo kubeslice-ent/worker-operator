@@ -393,6 +393,8 @@ github.com/kubeslice/router-sidecar v1.4.0 h1:UX2HBoLfFhc2b5mdFx9pj3kQZJffav70za
 github.com/kubeslice/router-sidecar v1.4.0/go.mod h1:xsK4UGxt9YUZr7i7Ig5BHwW+5R9GcJyon3RnH0A5SdU=
 github.com/kubeslice/slicegw-edge v1.0.0 h1:99mX8u5ChBaO6g2TSOXjgM1c2GZfyly61LW5eeLwhxQ=
 github.com/kubeslice/slicegw-edge v1.0.0/go.mod h1:Xx7TTYiayvBNOHEyc9NlvAyUZWiO4UXWkq0qxipHXkQ=
+github.com/kubeslice/worker-operator v1.4.5 h1:cvpFsPPFxKsbuTsSif/NWqwu7STvnYPIwblRr8loOn0=
+github.com/kubeslice/worker-operator v1.4.5/go.mod h1:+XPEPKBrK9+iEGxpEtNbJfcHNWOuF10CpEcH7AI4Pmk=
 github.com/looplab/fsm v0.3.0 h1:kIgNS3Yyud1tyxhG8kDqh853B7QqwnlWdgL3TD2s3Sw=
 github.com/looplab/fsm v0.3.0/go.mod h1:PmD3fFvQEIsjMEfvZdrCDZ6y8VwKTwWNjlpEr6IKPO4=
 github.com/magiconair/properties v1.8.1/go.mod h1:PppfXfuXeibc/6YijjN8zIbojt8czPbwD3XqdrwzmxQ=
