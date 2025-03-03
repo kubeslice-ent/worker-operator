@@ -19,10 +19,11 @@ package slice
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
+	"os"
 	"strings"
 
+	hubv1alpha1 "github.com/kubeslice/apis/pkg/controller/v1alpha1"
 	kubeslicev1beta1 "github.com/kubeslice/worker-operator/api/v1beta1"
 	"github.com/kubeslice/worker-operator/controllers"
 	ossEvents "github.com/kubeslice/worker-operator/events"
@@ -101,8 +102,8 @@ func (r *SliceReconciler) reconcileAppNamespaces(ctx context.Context, slice *kub
 			marked: false,
 		}
 	}
-	// Fetch namespace labels configMap
-	configLabels, configAnnotations, err := r.getNamespaceConfigFromConfigMap(ctx)
+	// Fetch namespace labels from cluster CR
+	configLabels, configAnnotations, err := r.getNamespaceConfigFromClusterCR(ctx)
 	if err != nil {
 		return ctrl.Result{}, err, true
 	}
@@ -700,7 +701,7 @@ func (r *SliceReconciler) installSliceNetworkPolicyInAppNs(ctx context.Context, 
 func (r *SliceReconciler) cleanupSliceNamespaces(ctx context.Context, slice *kubeslicev1beta1.Slice) error {
 	log := logger.FromContext(ctx).WithValues("type", "appNamespaces")
 
-	configLabels, configAnnotations, err := r.getNamespaceConfigFromConfigMap(ctx)
+	configLabels, configAnnotations, err := r.getNamespaceConfigFromClusterCR(ctx)
 	if err != nil {
 		log.Error(err, "unable to fetch namespace label config")
 		configLabels = make(map[string]string)
@@ -822,25 +823,14 @@ func (r *SliceReconciler) createAndLabelAppNamespaces(ctx context.Context, cfgAp
 	return labeledAppNsList, statusChanged, nil
 }
 
-// Fetch namespace ConfigMap from worker cluster
-func (r *SliceReconciler) getNamespaceConfigFromConfigMap(ctx context.Context) (map[string]string, map[string]string, error) {
-	cm := &corev1.ConfigMap{}
-	err := r.Get(ctx, types.NamespacedName{Name: "namespace-labels-config", Namespace: ControlPlaneNamespace}, cm)
+// Fetch namespace ConfigMap from cluster CR
+func (r *SliceReconciler) getNamespaceConfigFromClusterCR(ctx context.Context) (map[string]string, map[string]string, error) {
+	cr := &hubv1alpha1.Cluster{}
+	err := r.Get(ctx, types.NamespacedName{Name: os.Getenv("CLUSTER_NAME"), Namespace: controllers.ControlPlaneNamespace}, cr)
 	if err != nil {
 		return nil, nil, err
 	}
-
-	labels := make(map[string]string)
-	annotations := make(map[string]string)
-
-	if err := json.Unmarshal([]byte(cm.Data["labels"]), &labels); err != nil {
-		return nil, nil, err
-	}
-	if err := json.Unmarshal([]byte(cm.Data["annotations"]), &annotations); err != nil {
-		return labels, nil, err
-	}
-
-	return labels, annotations, nil
+	return cr.Status.NamespaceConfig.NamespaceLabels, cr.Status.NamespaceConfig.NamespaceAnnotations, nil
 }
 
 // mergeMaps merges two maps, giving priority to values from overrideMap
