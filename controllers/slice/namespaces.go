@@ -20,8 +20,10 @@ package slice
 import (
 	"context"
 	"fmt"
+	"os"
 	"strings"
 
+	hubv1alpha1 "github.com/kubeslice/apis/pkg/controller/v1alpha1"
 	kubeslicev1beta1 "github.com/kubeslice/worker-operator/api/v1beta1"
 	"github.com/kubeslice/worker-operator/controllers"
 	ossEvents "github.com/kubeslice/worker-operator/events"
@@ -99,6 +101,11 @@ func (r *SliceReconciler) reconcileAppNamespaces(ctx context.Context, slice *kub
 			ns:     &existingAppNsObj,
 			marked: false,
 		}
+	}
+	// Fetch namespace labels from cluster CR
+	configLabels, configAnnotations, err := r.getNamespaceConfigFromClusterCR(ctx)
+	if err != nil {
+		return ctrl.Result{}, err, true
 	}
 	// Compare the existing list with the configured list.
 	// If a namespace is not found in the existing list, consider it as an addition event and
@@ -687,6 +694,12 @@ func (r *SliceReconciler) installSliceNetworkPolicyInAppNs(ctx context.Context, 
 func (r *SliceReconciler) cleanupSliceNamespaces(ctx context.Context, slice *kubeslicev1beta1.Slice) error {
 	log := logger.FromContext(ctx).WithValues("type", "appNamespaces")
 
+	configLabels, configAnnotations, err := r.getNamespaceConfigFromClusterCR(ctx)
+	if err != nil {
+		log.Error(err, "unable to fetch namespace label config")
+		configLabels = make(map[string]string)
+		configAnnotations = make(map[string]string)
+	}
 	// Get the list of existing namespaces that are tagged with the kubeslice label
 	existingAppNsList := &corev1.NamespaceList{}
 	listOpts := []client.ListOption{
@@ -790,4 +803,35 @@ func (r *SliceReconciler) createAndLabelAppNamespaces(ctx context.Context, cfgAp
 		statusChanged = true
 	}
 	return labeledAppNsList, statusChanged, nil
+}
+
+// Fetch namespace ConfigMap from cluster CR
+func (r *SliceReconciler) getNamespaceConfigFromClusterCR(ctx context.Context) (map[string]string, map[string]string, error) {
+	cr := &hubv1alpha1.Cluster{}
+	err := r.Get(ctx, types.NamespacedName{Name: os.Getenv("CLUSTER_NAME"), Namespace: controllers.ControlPlaneNamespace}, cr)
+	if err != nil {
+		return nil, nil, err
+	}
+	return cr.Status.NamespaceConfig.NamespaceLabels, cr.Status.NamespaceConfig.NamespaceAnnotations, nil
+}
+
+// mergeMaps merges two maps, giving priority to values from overrideMap
+func mergeMaps(baseMap, overrideMap map[string]string) map[string]string {
+	result := make(map[string]string)
+	for k, v := range baseMap {
+		result[k] = v
+	}
+	for k, v := range overrideMap {
+		result[k] = v
+	}
+	return result
+}
+
+// removeEntries removes key-value pairs from map1 if they exist in map2 with the same value.
+func removeEntries(map1, map2 map[string]string) {
+	for key, value := range map2 {
+		if v, exists := map1[key]; exists && v == value {
+			delete(map1, key)
+		}
+	}
 }
