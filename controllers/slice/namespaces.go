@@ -20,10 +20,8 @@ package slice
 import (
 	"context"
 	"fmt"
-	"os"
 	"strings"
 
-	hubv1alpha1 "github.com/kubeslice/apis/pkg/controller/v1alpha1"
 	kubeslicev1beta1 "github.com/kubeslice/worker-operator/api/v1beta1"
 	"github.com/kubeslice/worker-operator/controllers"
 	ossEvents "github.com/kubeslice/worker-operator/events"
@@ -103,8 +101,9 @@ func (r *SliceReconciler) reconcileAppNamespaces(ctx context.Context, slice *kub
 		}
 	}
 	// Fetch namespace labels from cluster CR
-	configLabels, configAnnotations, err := r.getNamespaceConfigFromClusterCR(ctx)
+	configLabels, configAnnotations, err := r.HubClient.GetClusterNamespaceConfig(ctx, controllers.ClusterName)
 	if err != nil {
+		log.Error(err, "failed to fetch cluster namespaceconfig", "cluster", controllers.ClusterName)
 		return ctrl.Result{}, err, true
 	}
 	// Compare the existing list with the configured list.
@@ -701,9 +700,9 @@ func (r *SliceReconciler) installSliceNetworkPolicyInAppNs(ctx context.Context, 
 func (r *SliceReconciler) cleanupSliceNamespaces(ctx context.Context, slice *kubeslicev1beta1.Slice) error {
 	log := logger.FromContext(ctx).WithValues("type", "appNamespaces")
 
-	configLabels, configAnnotations, err := r.getNamespaceConfigFromClusterCR(ctx)
+	configLabels, configAnnotations, err := r.HubClient.GetClusterNamespaceConfig(ctx, controllers.ClusterName)
 	if err != nil {
-		log.Error(err, "unable to fetch namespace label config")
+		log.Error(err, "unable to fetch namespace label config", "cluster", controllers.ClusterName)
 		configLabels = make(map[string]string)
 		configAnnotations = make(map[string]string)
 	}
@@ -821,16 +820,6 @@ func (r *SliceReconciler) createAndLabelAppNamespaces(ctx context.Context, cfgAp
 		statusChanged = true
 	}
 	return labeledAppNsList, statusChanged, nil
-}
-
-// Fetch namespace ConfigMap from cluster CR
-func (r *SliceReconciler) getNamespaceConfigFromClusterCR(ctx context.Context) (map[string]string, map[string]string, error) {
-	cr := &hubv1alpha1.Cluster{}
-	err := r.Get(ctx, types.NamespacedName{Name: os.Getenv("CLUSTER_NAME"), Namespace: controllers.ControlPlaneNamespace}, cr)
-	if err != nil {
-		return nil, nil, err
-	}
-	return cr.Status.NamespaceConfig.NamespaceLabels, cr.Status.NamespaceConfig.NamespaceAnnotations, nil
 }
 
 // mergeMaps merges two maps, giving priority to values from overrideMap

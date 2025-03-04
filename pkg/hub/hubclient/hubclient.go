@@ -493,6 +493,15 @@ func (hubClient *HubClientConfig) DeleteServiceExport(ctx context.Context, servi
 	return nil
 }
 
+func (hubclient *HubClientConfig) GetClusterNamespaceConfig(ctx context.Context, clusterName string) (map[string]string, map[string]string, error) {
+	cluster := &hubv1alpha1.Cluster{}
+	err := hubclient.Get(ctx, types.NamespacedName{Name: clusterName, Namespace: ProjectNamespace}, cluster)
+	if err != nil {
+		return nil, nil, err
+	}
+	return cluster.Status.NamespaceConfig.NamespaceLabels, cluster.Status.NamespaceConfig.NamespaceAnnotations, nil
+}
+
 func (hubClient *HubClientConfig) UpdateAppPodsList(ctx context.Context, sliceConfigName string, appPods []kubeslicev1beta1.AppPod) error {
 	sliceConfig := &spokev1alpha1.WorkerSliceConfig{}
 	err := hubClient.Get(ctx, types.NamespacedName{
