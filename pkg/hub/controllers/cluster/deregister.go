@@ -286,6 +286,8 @@ func constructJobForClusterDeregister() *batchv1.Job {
 	}
 	backOffLimit := int32(0)
 	ttlSecondsAfterFinished := int32(600)
+	nonRootUID := int64(65536) // non-root user
+	yes, no := true, false
 	job := &batchv1.Job{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      deregisterJobName,
@@ -306,9 +308,30 @@ func constructJobForClusterDeregister() *batchv1.Job {
 				},
 				Spec: corev1.PodSpec{
 					ServiceAccountName: serviceAccountName,
+					SecurityContext: &corev1.PodSecurityContext{
+						RunAsUser:    &nonRootUID,
+						RunAsGroup:   &nonRootUID,
+						RunAsNonRoot: &yes,
+						SeccompProfile: &corev1.SeccompProfile{
+							Type: "RuntimeDefault",
+						},
+					},
 					Containers: []corev1.Container{{
 						Name:  cleanupContainer,
 						Image: workerInstallerImage,
+						SecurityContext: &corev1.SecurityContext{
+							RunAsUser:    &nonRootUID,
+							RunAsGroup:   &nonRootUID,
+							RunAsNonRoot: &yes,
+							SeccompProfile: &corev1.SeccompProfile{
+								Type: "RuntimeDefault",
+							},
+							AllowPrivilegeEscalation: &no,
+							Capabilities: &corev1.Capabilities{
+								Drop: []corev1.Capability{"ALL"},
+							},
+							ReadOnlyRootFilesystem: &yes,
+						},
 						Command: []string{
 							"/bin/bash",
 							"/tmp/kubeslice-cleanup.sh",
