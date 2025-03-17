@@ -783,7 +783,7 @@ func (r *SliceReconciler) createAndLabelAppNamespaces(ctx context.Context, cfgAp
 					// if unable to create move to next NS in your list
 					continue
 				}
-				log.Info("Namespace created successfully", "namespace", cfgAppNs)
+				log.Info("Namespace created successfully", "namespace", cfgAppNs, "labels", namespace.Labels, "annotations", namespace.Annotations)
 			} else {
 				log.Error(err, "Failed to get namespace", "namespace", cfgAppNs)
 				continue
@@ -814,7 +814,7 @@ func (r *SliceReconciler) createAndLabelAppNamespaces(ctx context.Context, cfgAp
 			log.Error(err, "Failed to label namespace", "Namespace", cfgAppNs)
 			return nil, false, err
 		}
-		log.Info("Labeled namespace successfully", "namespace", cfgAppNs)
+		log.Info("Labeled namespace successfully", "namespace", cfgAppNs, "labels", namespace.Labels, "annotations", namespace.Annotations)
 
 		labeledAppNsList = append(labeledAppNsList, cfgAppNs)
 		statusChanged = true

@@ -23,6 +23,7 @@ import (
 	"fmt"
 	"os"
 	"reflect"
+	"strings"
 
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 
@@ -50,6 +51,7 @@ const (
 
 var scheme = runtime.NewScheme()
 var log = logger.NewWrappedLogger().WithValues("type", "hub")
+var toFilter = []string{"kubeslice-", "kubernetes.io"}
 
 func init() {
 	clientgoscheme.AddToScheme(scheme)
@@ -493,13 +495,33 @@ func (hubClient *HubClientConfig) DeleteServiceExport(ctx context.Context, servi
 	return nil
 }
 
+func partialContains(slice []string, str string) bool {
+	for _, s := range slice {
+		if strings.Contains(str, s) {
+			return true
+		}
+	}
+	return false
+}
+
+func filterLabelsAndAnnotations(data map[string]string) map[string]string {
+	filtered := make(map[string]string)
+	for key, value := range data {
+		// Skip if `key` contains any substring in `toFilter`
+		if !partialContains(toFilter, key) {
+			filtered[key] = value
+		}
+	}
+	return filtered
+}
+
 func (hubclient *HubClientConfig) GetClusterNamespaceConfig(ctx context.Context, clusterName string) (map[string]string, map[string]string, error) {
 	cluster := &hubv1alpha1.Cluster{}
 	err := hubclient.Get(ctx, types.NamespacedName{Name: clusterName, Namespace: ProjectNamespace}, cluster)
 	if err != nil {
 		return nil, nil, err
 	}
-	return cluster.Status.NamespaceConfig.NamespaceLabels, cluster.Status.NamespaceConfig.NamespaceAnnotations, nil
+	return filterLabelsAndAnnotations(cluster.GetLabels()), filterLabelsAndAnnotations(cluster.GetAnnotations()), nil
 }
 
 func (hubClient *HubClientConfig) UpdateAppPodsList(ctx context.Context, sliceConfigName string, appPods []kubeslicev1beta1.AppPod) error {
